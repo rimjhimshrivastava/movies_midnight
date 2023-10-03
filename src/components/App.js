@@ -1,62 +1,74 @@
 import React from "react";
+import { connect } from 'react-redux';
 import { data } from "../data";
-import {Navbar, MovieCard} from './';
-import {addMovies, showFavouritesTab} from '../actions';
+import { Navbar, MovieCard } from "./";
+import { addMovies, showFavouritesTab } from "../actions";
 
-class App extends React.Component{
-  componentDidMount(){
-    const {store} = this.props;
-    store.subscribe(()=>{
-      this.forceUpdate();
-    })
+class App extends React.Component {
+  componentDidMount() {
     // after dispatch subscribe is called, to subscribe to the new state changes, and then the later code is executed
-    store.dispatch(addMovies(data))
-  }
-  
-  isMovieFavourite = (movie) =>{
-    const {movies} = this.props.store.getState();
-    const {favourites} = movies;
-    const index = favourites.indexOf(movie);
-    if(index !== -1){
-      return true;
-    }
-    return false;
+    this.props.dispatch(addMovies(data));
   }
 
-  onChangeTab = (val) =>{
-    this.props.store.dispatch(showFavouritesTab(val));
-  }
+  onChangeTab = (val) => {
+    this.props.dispatch(showFavouritesTab(val));
+  };
 
-  render(){
-    const {movies, search} = this.props.store.getState();
-    const {list, favourites, showFavourites} = movies;
-    const displayMovies = showFavourites?  favourites: list;
+  render() {
+    const { movies } = this.props;
+    const { list, favourites, showFavourites } = movies;
+    const displayMovies = showFavourites ? favourites : list;
     return (
       <div className="App">
-        <Navbar 
-        dispatch = {this.props.store.dispatch}
-        search = {search}
-        />
+        <Navbar />
         <div className="main">
           <div className="tabs">
-            <div className={`tab ${showFavourites? '': 'active-tabs'} ` } onClick={() => this.onChangeTab(false)}>Movies</div>
-            <div className={`tab ${showFavourites? 'active-tabs': ''} ` } onClick={() => this.onChangeTab(true)}>Favourite</div>
+            <div
+              className={`tab ${showFavourites ? "" : "active-tabs"} `}
+              onClick={() => this.onChangeTab(false)}
+            >
+              Movies
+            </div>
+            <div
+              className={`tab ${showFavourites ? "active-tabs" : ""} `}
+              onClick={() => this.onChangeTab(true)}
+            >
+              Favourite
+            </div>
           </div>
           <div className="list">
-            {displayMovies.map((movie, index) =>(
-              <MovieCard 
-              movie={movie} 
-              key={`movie-${index}`}
-              dispatch = {this.props.store.dispatch}
-              isMovieFavourite = {this.isMovieFavourite}
+            {displayMovies.map((movie, index) => (
+              <MovieCard
+                movie={movie}
+                key={`movie-${index}`}
               />
             ))}
           </div>
-          {displayMovies.length === 0 ? <div className="no-movies">No movies to display</div>: null}
+          {displayMovies.length === 0 ? (
+            <div className="no-movies">No movies to display</div>
+          ) : null}
         </div>
       </div>
     );
   }
 }
 
-export default App;
+// class AppWrapper extends React.Component{
+//   render(){
+//     return(
+//       <StoreContext.Consumer>
+//         {(store) => <App store={store} />}
+//       </StoreContext.Consumer>
+//     )
+//   }
+// }
+
+function mapStateToProps(state) {
+  return {
+    movies: state.movies,
+  };
+}
+
+const connectedAppComponent = connect(mapStateToProps)(App);
+
+export default connectedAppComponent;
